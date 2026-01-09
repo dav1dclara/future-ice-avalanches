@@ -1,0 +1,103 @@
+# wandb sweep --project future-ice-avalanches --entity davidclara-eth-z-rich --name feature_run1_sweep configs/sweep_feature_run1.yaml
+#
+# CUSTOM FEATURE COMBINATIONS SWEEP
+# Tests: 6 custom feature combinations
+# Method: Grid search (tests ALL 6 combinations)
+# All terrain attributes use sigma = 1, elevation uses sigma = 0
+# No zonal statistics are included
+#
+# To run: wandb agent <sweep_id>
+
+program: scripts/modelling/train.py
+method: grid  # Grid search - tests all combinations
+metric:
+  name: cv/src_auc_mean
+  goal: maximize
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+
+parameters:
+  # ============================================
+  # CUSTOM FEATURE COMBINATIONS (6 total)
+  # ============================================
+  # All features use sigma = 1 (except elevation which uses sigma = 0)
+  # No zonal statistics are included
+  #
+  # Run 1: slope
+  # Run 2: slope, slope_break_index
+  # Run 3: profile_curvature, planform_curvature, mean_curvature
+  # Run 4: slope, profile_curvature, planform_curvature, mean_curvature
+  # Run 5: slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature
+  # Run 6: elevation, slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature
+  feature_set:
+    values: [13, 14, 15, 16, 17, 18]
+    # Feature filtering is implemented in train.py via filter_features_by_set()
+    # Feature sets 13-18 are custom combinations with specific feature names
+
+  # ============================================
+  # SAMPLING PARAMETERS (fixed at safe defaults)
+  # ============================================
+  sampling.unlabeled_ratio:
+    value: 5
+    # Number of unlabeled samples per positive sample (default from train.yaml)
+
+  sampling.folds:
+    value: 5
+    # Number of cross-validation folds
+
+  sampling.buffer_pixels:
+    value: 10
+    # Buffer size in pixels
+
+  sampling.seed:
+    value: 42
+    # Random seed for reproducibility
+
+  # ============================================
+  # MODEL PARAMETERS (fixed at safe defaults)
+  # ============================================
+  model.type:
+    value: "bagging"
+    # Fixed to bagging only
+
+  model.base_estimator.type:
+    value: "random_forest"
+    # Fixed to RandomForest
+
+  model.base_estimator.n_estimators:
+    value: 50
+    # Number of trees in RandomForest (default from train.yaml)
+
+  model.base_estimator.max_depth:
+    value: 8
+    # Tree depth (default from train.yaml)
+
+  model.base_estimator.random_state:
+    value: 42
+    # Random seed for reproducibility
+
+  model.bagging.pu_n_estimators:
+    value: 10
+    # Number of PU classifiers in bagging ensemble (default from train.yaml)
+
+# ============================================
+# SWEEP SUMMARY
+# ============================================
+# Total combinations: 6 custom feature sets
+# Grid search will test ALL 6 combinations
+#
+# Feature sets 13-18 are custom combinations:
+# - 13: slope (sigma 1)
+# - 14: slope, slope_break_index (sigma 1)
+# - 15: profile_curvature, planform_curvature, mean_curvature (sigma 1)
+# - 16: slope, profile_curvature, planform_curvature, mean_curvature (sigma 1)
+# - 17: slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature (sigma 1)
+# - 18: elevation (sigma 0), slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature (sigma 1)
+#
+# All terrain attributes use sigma = 1 (except elevation which uses sigma = 0)
+# No zonal statistics are included
+# Feature filtering is implemented in train.py via filter_features_by_set()

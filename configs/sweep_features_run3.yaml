@@ -1,0 +1,110 @@
+# wandb sweep --project future-ice-avalanches --entity davidclara-eth-z-rich --name features_run3_sweep configs/sweep_features_run3.yaml
+#
+# ZONAL STATISTICS SWEEP
+# Tests: 6 zonal statistics configurations with feature set 24 as base
+# Method: Grid search (tests ALL 6 combinations)
+# Base features: slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature (sigma [1,3,5])
+# Zonal statistics are added on top of the base features
+# No elevation
+#
+# To run: wandb agent <sweep_id>
+
+program: scripts/modelling/train.py
+method: grid  # Grid search - tests all combinations
+metric:
+  name: cv/src_auc_mean
+  goal: maximize
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+
+parameters:
+  # ============================================
+  # ZONAL STATISTICS CONFIGURATIONS (6 total)
+  # ============================================
+  # Base configuration: Feature set 24
+  # Features: slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature (sigma [1,3,5])
+  # Zonal statistics are applied to sigma 1 versions of these features
+  #
+  # Run 1 (set 25): zonal std, window [3]
+  # Run 2 (set 26): zonal range, window [3]
+  # Run 3 (set 27): zonal std and range, window [3]
+  # Run 4 (set 28): zonal std, window [3,5,7]
+  # Run 5 (set 29): zonal range, window [3,5,7]
+  # Run 6 (set 30): zonal std and range, window [3,5,7]
+  #
+  # No elevation, no elevation zonal statistics
+  feature_set:
+    values: [25, 26, 27, 28, 29, 30]
+    # Feature filtering is implemented in train.py via filter_features_by_set()
+    # Feature sets 25-30 use feature set 24 as base + varying zonal statistics
+
+  # ============================================
+  # SAMPLING PARAMETERS (fixed at safe defaults)
+  # ============================================
+  sampling.unlabeled_ratio:
+    value: 5
+    # Number of unlabeled samples per positive sample (default from train.yaml)
+
+  sampling.folds:
+    value: 5
+    # Number of cross-validation folds
+
+  sampling.buffer_pixels:
+    value: 10
+    # Buffer size in pixels
+
+  sampling.seed:
+    value: 42
+    # Random seed for reproducibility
+
+  # ============================================
+  # MODEL PARAMETERS (fixed at safe defaults)
+  # ============================================
+  model.type:
+    value: "bagging"
+    # Fixed to bagging only
+
+  model.base_estimator.type:
+    value: "random_forest"
+    # Fixed to RandomForest
+
+  model.base_estimator.n_estimators:
+    value: 50
+    # Number of trees in RandomForest (default from train.yaml)
+
+  model.base_estimator.max_depth:
+    value: 8
+    # Tree depth (default from train.yaml)
+
+  model.base_estimator.random_state:
+    value: 42
+    # Random seed for reproducibility
+
+  model.bagging.pu_n_estimators:
+    value: 10
+    # Number of PU classifiers in bagging ensemble (default from train.yaml)
+
+# ============================================
+# SWEEP SUMMARY
+# ============================================
+# Total combinations: 6 zonal statistics configurations
+# Grid search will test ALL 6 combinations
+#
+# Feature sets 25-30 use feature set 24 as base + varying zonal statistics:
+# Base features (from set 24): slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature (sigma [1,3,5])
+#
+# Zonal statistics configurations:
+# - 25: zonal std, window [3]
+# - 26: zonal range, window [3]
+# - 27: zonal std and range, window [3]
+# - 28: zonal std, window [3,5,7]
+# - 29: zonal range, window [3,5,7]
+# - 30: zonal std and range, window [3,5,7]
+#
+# Zonal statistics are computed on sigma 1 versions of the terrain features
+# No elevation, no elevation zonal statistics
+# Feature filtering is implemented in train.py via filter_features_by_set()

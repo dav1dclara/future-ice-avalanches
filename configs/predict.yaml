@@ -1,0 +1,13 @@
+# Configuration for prediction script
+# Run with: python scripts/modelling/predict.py run_name=my_run_name
+
+run_name: null  # Must be provided via command line: run_name=my_run_name
+
+# Window size for memory-efficient processing (pixels)
+# Larger windows = more memory but fewer I/O operations
+# Smaller windows = less memory but more I/O operations
+# Default: 2048x2048 pixels (~1.1 GB peak memory for 70 features)
+window_size: 2048
+
+paths:
+  output: data/predictions  # Output directory for risk maps

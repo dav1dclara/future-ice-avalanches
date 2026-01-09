@@ -1,0 +1,129 @@
+# wandb sweep --project future-ice-avalanches --entity davidclara-eth-z-rich --name hyperparameter_sweep configs/sweep.yaml
+#
+# HYPERPARAMETER SWEEP
+# Tests: Feature set 30 (set 24 + zonal std and range, window [3,5,7]) with varying hyperparameters
+# Method: Bayesian optimization (limited to 50 runs)
+# Feature set 30: slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature (sigma [1,3,5]) + zonal stats
+#
+# To run: wandb agent <sweep_id>
+
+program: scripts/modelling/train.py
+method: bayes  # Bayesian optimization
+metric:
+  name: cv/src_auc_mean
+  goal: maximize
+
+run_cap: 50  # Limit to 50 runs
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+
+parameters:
+  # ============================================
+  # FEATURE SET (fixed)
+  # ============================================
+  # Feature set 30: Set 24 + zonal std and range, window [3,5,7]
+  # Base features: slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature (sigma [1,3,5])
+  # Zonal statistics: std and range, window [3,5,7] (computed on sigma 1 versions)
+  # No elevation
+  feature_set:
+    value: 30
+    # Feature filtering is implemented in train.py via filter_features_by_set()
+
+  # ============================================
+  # SAMPLING PARAMETERS (fixed)
+  # ============================================
+  sampling.unlabeled_ratio:
+    value: 5
+    # Number of unlabeled samples per positive sample (fixed)
+
+  sampling.folds:
+    value: 5
+    # Number of cross-validation folds
+
+  sampling.buffer_pixels:
+    value: 10
+    # Buffer size in pixels
+
+  sampling.seed:
+    value: 42
+    # Random seed for reproducibility
+
+  # ============================================
+  # MODEL TYPE (fixed)
+  # ============================================
+  model.type:
+    value: "bagging"
+    # Fixed to bagging only
+
+  model.base_estimator.type:
+    value: "random_forest"
+    # Fixed to RandomForest
+
+  # ============================================
+  # HYPERPARAMETERS TO VARY
+  # ============================================
+  # PU Bagging parameters
+  model.bagging.pu_n_estimators:
+    value: 5
+    # Number of PU classifiers in bagging ensemble (fixed to 5)
+    # More = better but slower
+
+  # RandomForest base estimator parameters
+  model.base_estimator.n_estimators:
+    values: [50, 100]
+    # Number of trees in RandomForest
+    # More trees = better but slower
+
+  model.base_estimator.max_depth:
+    values: [6, 8, 10]
+    # Tree depth: Controls overfitting vs model capacity
+    # Lower = more regularization, higher = more complex
+
+  model.base_estimator.min_samples_leaf:
+    values: [1, 2, 4]
+    # Minimum samples required to be at a leaf node
+    # Higher = more regularization
+
+  model.base_estimator.min_samples_split:
+    values: [2, 5, 10]
+  # Minimum samples required to split an internal node
+  # Now treated as a hyperparameter with 3 options
+
+  model.base_estimator.max_features:
+    values: ["sqrt", 0.5]
+    # Number of features to consider when looking for the best split
+    # 'sqrt' = sqrt(n_features), float = fraction of features
+
+  # ============================================
+  # FIXED PARAMETERS (for reproducibility)
+  # ============================================
+  model.base_estimator.random_state:
+    value: 42
+    # Random seed for reproducibility
+
+  model.base_estimator.criterion:
+    value: "gini"
+    # Splitting criterion (fixed)
+
+# ============================================
+# SWEEP SUMMARY
+# ============================================
+# Method: Bayesian optimization (limited to 50 runs)
+# Hyperparameters to optimize:
+#   - pu_n_estimators: 5 (fixed)
+#   - n_estimators: [50, 100] (2 values)
+#   - max_depth: [6, 8, 10] (3 values)
+#   - min_samples_leaf: [1, 2, 4] (3 values)
+#   - min_samples_split: [2, 5, 10] (3 values)
+#   - max_features: ["sqrt", 0.5] (2 values)
+#
+# Total combinations: 1 × 2 × 3 × 3 × 3 × 2 = 108 combinations
+# (Bayesian optimization will intelligently sample 50 runs from this space)
+#
+# Feature set 30: Set 24 (slope, slope_break_index, profile_curvature, planform_curvature, mean_curvature with sigma [1,3,5])
+#                 + zonal statistics (std and range, window [3,5,7])
+# Feature filtering is implemented in train.py via filter_features_by_set()

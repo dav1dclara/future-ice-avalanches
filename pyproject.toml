@@ -1,0 +1,15 @@
+# Build system configuration
+# Specifies how to build and package this project
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+# Project metadata
+[project]
+name = "future_ice_avalanches"
+version = "0.0.0"
+
+# Package discovery configuration
+# Tells setuptools to find packages in the 'src' directory
+[tool.setuptools.packages.find]
+where = ["src"]

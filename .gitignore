@@ -1,0 +1,11 @@
+/data/
+/notebooks/
+/outputs/
+/qgis/
+/wandb/
+
+*.egg-info
+__pycache__/
+.DS_Store
+.ruff_cache/
+.vscode/

@@ -1,0 +1,36 @@
+defaults:
+  - _self_
+  - features
+
+datasets:
+  events:
+    # Raw data
+    raw_dir: data/raw/events
+    events_file: data/raw/events/glamos-db_glacierhazards_agg_20250306.xlsx
+    geoms_file: data/raw/events/geoms/glacierhazards_complete.shp
+    # Processed data
+    processed_dir: data/processed/events
+    events_filtered_file: data/processed/events/events_filtered.csv
+    geoms_processed_file: data/processed/events/geoms.gpkg
+    events_geoms_file: data/processed/events/events_geoms.gpkg
+
+  sgi1850_outlines_file: data/raw/sgi1850/SGI_1850.shp
+
+  sgi2016_outlines_file: data/raw/sgi2016/SGI_2016_glaciers.shp
+
+  sgt2020:
+    swissalti3d_file: data/raw/sgt2020/08_SurfaceElevation_SwissAlps/SwissALTI3D_r2019.tif
+    ice_thickness_file: data/raw/sgt2020/04_IceThickness_SwissAlps/IceThickness.tif
+
+  # Release zones file
+  release_zones_file: data/processed/release_zones/release_zones_v2.gpkg
+
+  # Bedrock elevation file
+  bedrock_elevation_file: data/processed/bedrock/bedrock_elevation_sgi1850.tif
+
+  # Terrain features directory
+  terrain_features_dir: data/processed/features
+
+  # Folds and labels files
+  folds_file: data/processed/folds_labels/folds.tif
+  labels_file: data/processed/folds_labels/labels.tif

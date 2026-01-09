@@ -1,0 +1,263 @@
+paths:
+  folds: data/processed/folds_labels/folds.tif
+  labels: data/processed/folds_labels/labels.tif
+  features: data/processed/features
+  models: data/models
+
+sampling:
+  folds: 5
+  buffer_pixels: 10
+  seed: 42
+  unlabeled_ratio: 5  # Number of unlabeled patches per positive patch
+
+# Feature set selection (1-12) for sweeps
+# Only used when running sweeps - filters features based on combination
+# Set to null to use all features from the features list above
+feature_set: null
+
+features:
+  # Terrain attributes - Elevation (removing might be better)
+  - name: elevation
+    sigma: 0
+
+  # Terrain attributes - Slope at multiple scales
+  - name: slope
+    sigma: 1
+  - name: slope
+    sigma: 3
+  - name: slope
+    sigma: 5
+
+  # Terrain attributes - Slope break index at multiple scales
+  - name: slope_break_index
+    sigma: 1
+  - name: slope_break_index
+    sigma: 3
+  - name: slope_break_index
+    sigma: 5
+
+  # Terrain attributes - Curvature features at multiple scales
+  - name: profile_curvature
+    sigma: 1
+  - name: profile_curvature
+    sigma: 3
+  - name: profile_curvature
+    sigma: 5
+
+  - name: planform_curvature
+    sigma: 1
+  - name: planform_curvature
+    sigma: 3
+  - name: planform_curvature
+    sigma: 5
+
+  - name: mean_curvature
+    sigma: 1
+  - name: mean_curvature
+    sigma: 3
+  - name: mean_curvature
+    sigma: 5
+
+  # Zonal statistics - Elevation (sigma 0)
+  - name: elevation
+    sigma: 0
+    stat: std
+    window: 3
+  - name: elevation
+    sigma: 0
+    stat: std
+    window: 5
+  - name: elevation
+    sigma: 0
+    stat: std
+    window: 7
+  - name: elevation
+    sigma: 0
+    stat: range
+    window: 3
+  - name: elevation
+    sigma: 0
+    stat: range
+    window: 5
+  - name: elevation
+    sigma: 0
+    stat: range
+    window: 7
+
+  # Zonal statistics - Slope (sigma 1)
+  - name: slope
+    sigma: 1
+    stat: std
+    window: 3
+  - name: slope
+    sigma: 1
+    stat: std
+    window: 5
+  - name: slope
+    sigma: 1
+    stat: std
+    window: 7
+  - name: slope
+    sigma: 1
+    stat: range
+    window: 3
+  - name: slope
+    sigma: 1
+    stat: range
+    window: 5
+  - name: slope
+    sigma: 1
+    stat: range
+    window: 7
+
+  # Zonal statistics - Slope break index (sigma 1)
+  - name: slope_break_index
+    sigma: 1
+    stat: std
+    window: 3
+  - name: slope_break_index
+    sigma: 1
+    stat: std
+    window: 5
+  - name: slope_break_index
+    sigma: 1
+    stat: std
+    window: 7
+  - name: slope_break_index
+    sigma: 1
+    stat: range
+    window: 3
+  - name: slope_break_index
+    sigma: 1
+    stat: range
+    window: 5
+  - name: slope_break_index
+    sigma: 1
+    stat: range
+    window: 7
+
+  # Zonal statistics - Profile curvature (sigma 1)
+  - name: profile_curvature
+    sigma: 1
+    stat: std
+    window: 3
+  - name: profile_curvature
+    sigma: 1
+    stat: std
+    window: 5
+  - name: profile_curvature
+    sigma: 1
+    stat: std
+    window: 7
+  - name: profile_curvature
+    sigma: 1
+    stat: range
+    window: 3
+  - name: profile_curvature
+    sigma: 1
+    stat: range
+    window: 5
+  - name: profile_curvature
+    sigma: 1
+    stat: range
+    window: 7
+
+  # Zonal statistics - Planform curvature (sigma 1)
+  - name: planform_curvature
+    sigma: 1
+    stat: std
+    window: 3
+  - name: planform_curvature
+    sigma: 1
+    stat: std
+    window: 5
+  - name: planform_curvature
+    sigma: 1
+    stat: std
+    window: 7
+  - name: planform_curvature
+    sigma: 1
+    stat: range
+    window: 3
+  - name: planform_curvature
+    sigma: 1
+    stat: range
+    window: 5
+  - name: planform_curvature
+    sigma: 1
+    stat: range
+    window: 7
+
+  # Zonal statistics - Mean curvature (sigma 1)
+  - name: mean_curvature
+    sigma: 1
+    stat: std
+    window: 3
+  - name: mean_curvature
+    sigma: 1
+    stat: std
+    window: 5
+  - name: mean_curvature
+    sigma: 1
+    stat: std
+    window: 7
+  - name: mean_curvature
+    sigma: 1
+    stat: range
+    window: 3
+  - name: mean_curvature
+    sigma: 1
+    stat: range
+    window: 5
+  - name: mean_curvature
+    sigma: 1
+    stat: range
+    window: 7
+
+model:
+  # PU classifier type: "bagging", "elkanoto", "weighted_elkanoto"
+  type: bagging
+
+  # Base estimator type: "random_forest"
+  base_estimator:
+    type: random_forest
+
+    # Common parameters (used by both estimators)
+    n_estimators: 50
+    max_depth: 8
+    random_state: 42  # Keep fixed for reproducibility
+
+    # RandomForest-specific parameters
+    # Key parameters for sweeps:
+    # - n_estimators: More trees = better but slower (try: 50, 100, 200, 300)
+    # - max_depth: Controls overfitting (try: 4, 6, 8, 10, 12, None for unlimited)
+    # - min_samples_split: Minimum samples to split (try: 2, 5, 10, 20)
+    # - min_samples_leaf: Minimum samples in leaf (try: 1, 2, 4, 8)
+    # - max_features: Features per split (try: 'sqrt', 'log2', 0.3, 0.5, None)
+    # - class_weight: Class weighting (try: null, 'balanced', 'balanced_subsample', or dict)
+    min_samples_split: 2
+    min_samples_leaf: 1
+    max_features: sqrt  # 'sqrt', 'log2', float (0.0-1.0), int, or None
+    criterion: gini  # 'gini' or 'entropy'
+    class_weight: null  # null, 'balanced', 'balanced_subsample', or {0: weight0, 1: weight1}
+
+  # Model-specific parameters (only parameters for the selected type are used)
+  bagging:
+    # Number of PU classifiers in the bagging ensemble
+    # Try: 5, 10, 20, 30 (more = better but slower)
+    pu_n_estimators: 10
+
+  elkanoto:
+    # Fraction of positive samples held out to estimate class prior
+    # Try: 0.05, 0.1, 0.15, 0.2, 0.25 (smaller = more training data, but less reliable prior)
+    hold_out_ratio: 0.1
+
+  weighted_elkanoto:
+    # Same as elkanoto - fraction of positives held out
+    # Try: 0.05, 0.1, 0.15, 0.2, 0.25
+    hold_out_ratio: 0.1
+
+wandb:
+  enabled: true
+  entity: davidclara-eth-z-rich
+  project: future-ice-avalanches
